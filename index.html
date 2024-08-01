@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gelişmiş Finansal Takip Sistemi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .table-container {
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        .paid {
+            background-color: #d4edda;
+        }
+        .unpaid {
+            background-color: #f8d7da;
+        }
+        .warning {
+            color: red;
+            font-weight: bold;
+        }
+        .action-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .action-button:hover {
+            background-color: #0056b3;
+        }
+        .delete-button {
+            background-color: #dc3545;
+            margin-left: 5px;
+        }
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+        .edit-button {
+            background-color: #28a745;
+        }
+        .edit-button:hover {
+            background-color: #218838;
+        }
+        .toggle-paid-button {
+            background-color: #ffc107;
+        }
+        .toggle-paid-button:hover {
+            background-color: #e0a800;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gelişmiş Finansal Takip Sistemi</h1>
+
+        <!-- Form for adding new financial data -->
+        <div class="form-group">
+            <label for="item-type">Öğe Türü:</label>
+            <select id="item-type">
+                <option value="income">Maaş</option>
+                <option value="credit-card">Kredi Kartı</option>
+                <option value="loan">Kredi</option>
+                <option value="regular-debt">Düzenli Borç</option>
+                <option value="utility">Fatura</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="item-description">Açıklama:</label>
+            <select id="item-description">
+                <option value="emekli-maaşı">Emekli Maaşı</option>
+                <option value="çalışma-maaşı">Çalışma Maaşı</option>
+                <option value="konut-kredisi">Yapı Kredi - Konut Kredisi</option>
+                <option value="tasit-kredisi">Türkiye Finans - Taşıt Kredisi</option>
+                <option value="aidat">Aidat</option>
+                <option value="youtube">YouTube</option>
+                <option value="kyk">KYK</option>
+                <option value="spotify">Spotify</option>
+                <option value="vodafone">Vodafone</option>
+                <option value="iski">İSKİ</option>
+                <option value="igdas">İGDAŞ</option>
+                <option value="bedas">BEDAŞ</option>
+                <option value="ayesas">AYESAŞ</option>
+                <option value="tv-plus">TV+</option>
+                <option value="kablotv">KabloTV</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="item-amount">Tutar:</label>
+            <input type="number" id="item-amount" step="0.01" placeholder="Tutar">
+        </div>
+        <div class="form-group" id="additional-fields">
+            <div id="credit-card-fields" class="hidden">
+                <label for="last-four-digits">Kredi Kartı Son 4 Hane:</label>
+                <input type="text" id="last-four-digits" maxlength="4">
+            </div>
+            <div id="loan-fields" class="hidden">
+                <label for="loan-type">Kredi Türü:</label>
+                <select id="loan-type">
+                    <option value="housing">Konut</option>
+                    <option value="vehicle">Taşıt</option>
+                </select>
+                <label for="loan-due-date">Vade Tarihi:</label>
+                <input type="date" id="loan-due-date">
+            </div>
+            <div id="regular-debt-fields" class="hidden">
+                <label for="debt-due-date">Vade Tarihi:</label>
+                <input type="date" id="debt-due-date">
+            </div>
+        </div>
+        <button class="action-button" onclick="addItem()">Ekle</button>
+
+        <!-- Table for displaying financial data -->
+        <div class="table-container">
+            <h2>Finansal Özet</h2>
+            <table id="financial-table">
+                <thead>
+                    <tr>
+                        <th>Öğe Türü</th>
+                        <th>Açıklama</th>
+                        <th>Tutar</th>
+                        <th>Durum</th>
+                        <th>Son Ödeme Tarihi</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody id="financial-table-body">
+                    <!-- Rows will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const itemTypeSelect = document.getElementById('item-type');
+        const itemDescriptionSelect = document.getElementById('item-description');
+        const additionalFields = document.getElementById('additional-fields');
+        const creditCardFields = document.getElementById('credit-card-fields');
+        const loanFields = document.getElementById('loan-fields');
+        const regularDebtFields = document.getElementById('regular-debt-fields');
+
+        // Load existing data from local storage
+        window.onload = function() {
+            loadFromLocalStorage();
+        }
+
+        itemTypeSelect.addEventListener('change', () => {
+            toggleAdditionalFields(itemTypeSelect.value);
+            populateDescriptionOptions(itemTypeSelect.value);
+        });
+
+        function toggleAdditionalFields(type) {
+            creditCardFields.classList.add('hidden');
+            loanFields.classList.add('hidden');
+            regularDebtFields.classList.add('hidden');
+
+            if (type === 'credit-card') {
+                creditCardFields.classList.remove('hidden');
+            } else if (type === 'loan') {
+                loanFields.classList.remove('hidden');
+            } else if (type === 'regular-debt') {
+                regularDebtFields.classList.remove('hidden');
+            }
+        }
+
+        function populateDescriptionOptions(type) {
+            itemDescriptionSelect.innerHTML = '';
+            let options = [];
+
+            if (type === 'income') {
+                options = [
+                    'Emekli Maaşı',
+                    'Çalışma Maaşı'
+                ];
+            } else if (type === 'credit-card') {
+                options = [
+                    'Akbank',
+                    'Garanti',
+                    'Yapı Kredi'
+                ];
+            } else if (type === 'loan') {
+                options = [
+                    'Yapı Kredi - Konut Kredisi',
+                    'Türkiye Finans - Taşıt Kredisi'
+                ];
+            } else if (type === 'regular-debt') {
+                options = [
+                    'Aidat',
+                    'YouTube',
+                    'KYK',
+                    'Spotify',
+                    'Vodafone',
+                    'İSKİ',
+                    'İGDAŞ',
+                    'BEDAŞ',
+                    'AYESAŞ',
+                    'TV+',
+                    'KabloTV'
+                ];
+            }
+
+            options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option.toLowerCase().replace(/\s+/g, '-');
+                opt.textContent = option;
+                itemDescriptionSelect.appendChild(opt);
+            });
+        }
+
+        function addItem() {
+            const type = itemTypeSelect.value;
+            const description = itemDescriptionSelect.value;
+            const amount = document.getElementById('item-amount').value;
+            let dueDate;
+            if (type === 'loan') {
+                dueDate = document.getElementById('loan-due-date').value;
+            } else if (type === 'regular-debt') {
+                dueDate = document.getElementById('debt-due-date').value;
+            }
+
+            const tableBody = document.getElementById('financial-table-body');
+            const row = document.createElement('tr');
+
+            row.innerHTML = 
+                <td>${capitalizeFirstLetter(type.replace('-', ' '))}</td>
+                <td>${description.replace(/-/g, ' ')}</td>
+                <td>${parseFloat(amount).toFixed(2)} TL</td>
+                <td class="${type === 'income' ? '' : 'unpaid'}">${type === 'income' ? 'Ödendi' : 'Ödenmedi'}</td>
+                <td>${dueDate ? formatDate(dueDate) : '-'}</td>
+                <td>
+                    <button class="action-button edit-button" onclick="editItem(this)">Düzenle</button>
+                    <button class="action-button delete-button" onclick="deleteItem(this)">Sil</button>
+                    ${type !== 'income' ? <button class="action-button toggle-paid-button" onclick="togglePaid(this)">Ödendi/Ödenmedi</button> : ''}
+                </td>
+            ;
+
+            tableBody.appendChild(row);
+
+            saveToLocalStorage();
+
+            // Clear the form
+            document.querySelector('.form-group input').value = '';
+            document.querySelectorAll('.form-group select').forEach(select => select.selectedIndex = 0);
+        }
+
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return ${day}/${month}/${year};
+        }
+
+        function editItem(button) {
+            // Edit item functionality
+            const row = button.parentElement.parentElement;
+            const cells = row.children;
+            document.getElementById('item-type').value = cells[0].textContent.toLowerCase().replace(' ', '-');
+            document.getElementById('item-description').value = cells[1].textContent.toLowerCase().replace(/ /g, '-');
+            document.getElementById('item-amount').value = cells[2].textContent.replace(' TL', '');
+            if (cells[0].textContent !== 'Maaş') {
+                document.getElementById('debt-due-date').value = formatDateToInput(cells[4].textContent);
+            }
+            row.remove();
+            saveToLocalStorage();
+        }
+
+        function formatDateToInput(dateString) {
+            const [day, month, year] = dateString.split('/');
+            return ${year}-${month}-${day};
+        }
+
+        function deleteItem(button) {
+            button.parentElement.parentElement.remove();
+            saveToLocalStorage();
+        }
+
+        function togglePaid(button) {
+            const row = button.parentElement.parentElement;
+            const statusCell = row.children[3];
+            if (statusCell.textContent === 'Ödenmedi') {
+                statusCell.textContent = 'Ödendi';
+                statusCell.classList.remove('unpaid');
+                statusCell.classList.add('paid');
+            } else {
+                statusCell.textContent = 'Ödenmedi';
+                statusCell.classList.remove('paid');
+                statusCell.classList.add('unpaid');
+            }
+            saveToLocalStorage();
+        }
+
+        function saveToLocalStorage() {
+            const rows = document.querySelectorAll('#financial-table-body tr');
+            const data = Array.from(rows).map(row => {
+                const cells = row.children;
+                return {
+                    type: cells[0].textContent.toLowerCase().replace(' ', '-'),
+                    description: cells[1].textContent.toLowerCase().replace(/ /g, '-'),
+                    amount: parseFloat(cells[2].textContent.replace(' TL', '')),
+                    status: cells[3].textContent,
+                    dueDate: cells[4].textContent !== '-' ? cells[4].textContent : null
+                };
+            });
+            localStorage.setItem('financialData', JSON.stringify(data));
+        }
+
+        function loadFromLocalStorage() {
+            const data = JSON.parse(localStorage.getItem('financialData')) || [];
+            const tableBody = document.getElementById('financial-table-body');
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = 
+                    <td>${capitalizeFirstLetter(item.type.replace('-', ' '))}</td>
+                    <td>${item.description.replace(/-/g, ' ')}</td>
+                    <td>${item.amount.toFixed(2)} TL</td>
+                    <td class="${item.status === 'Ödendi' ? 'paid' : 'unpaid'}">${item.status}</td>
+                    <td>${item.dueDate ? formatDate(item.dueDate) : '-'}</td>
+                    <td>
+                        <button class="action-button edit-button" onclick="editItem(this)">Düzenle</button>
+                        <button class="action-button delete-button" onclick="deleteItem(this)">Sil</button>
+                        ${item.type !== 'income' ? <button class="action-button toggle-paid-button" onclick="togglePaid(this)">Ödendi/Ödenmedi</button> : ''}
+                    </td>
+                ;
+                tableBody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
+
